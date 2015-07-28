@@ -9,14 +9,19 @@
  */
 
 #import "CKMSampleTableComponent.h"
+#import "CKMSampleActions.h"
 
 #import <ComponentKit/CKComponentSubclass.h>
 #import <ComponentKit/CKComponentInternal.h>
 #import <ComponentKit/CKComponentMemoizer.h>
+#import <ComponentKit/CKComponentViewInterface.h>
 #import <ComponentKit/CKNSTableViewDataSource.h>
 #import <ComponentKit/CKTransactionalComponentDataSourceChangeset.h>
+#import <ComponentKit/CKTransactionalComponentDataSourceItem.h>
 
-@interface CKMSampleTableComponent () {
+#include <set>
+
+@interface CKMSampleTableComponent () <CKMSampleActions> {
   @package
   CKComponent *_table;
   Class _cellProviderClass;
@@ -33,6 +38,7 @@
   NSTableView *_tableView;
   CKNSTableViewDataSource *_dataSource;
   NSArray *_model;
+  std::set<NSInteger> _expandedCells;
 }
 
 - (void)dealloc
@@ -98,6 +104,35 @@ static CKTransactionalComponentDataSourceChangeset *insertItems(NSArray *models,
 - (void)didUnmount
 {
   [super didUnmount];
+}
+
+
+- (void)expandCell:(CKComponent *)cell atIndex:(NSInteger)idx
+{
+  bool expanded;
+  auto iter = _expandedCells.find(idx);
+  if (iter != _expandedCells.end()) {
+    _expandedCells.erase(iter);
+    expanded = false;
+  } else {
+    _expandedCells.insert(idx);
+    expanded = true;
+  }
+
+  NSArray *model = (NSArray *)[_dataSource modelForRow:idx];
+
+  NSIndexPath *indexPath = [NSIndexPath indexPathForItem:idx inSection:0];
+  NSDictionary *updates = @{ indexPath : @[model[0], model[1], @(expanded)] };
+
+  CKTransactionalComponentDataSourceChangeset *changeset =
+  [[CKTransactionalComponentDataSourceChangeset alloc] initWithUpdatedItems:updates
+                                                               removedItems:nil
+                                                            removedSections:nil
+                                                                 movedItems:nil
+                                                           insertedSections:nil
+                                                              insertedItems:nil];
+
+  [_dataSource applyChangeset:changeset mode:CKUpdateModeSynchronous userInfo:nil];
 }
 
 @end

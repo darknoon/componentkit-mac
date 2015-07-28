@@ -10,26 +10,31 @@
   NSString *_title;
 }
 
-+ (instancetype)newWithTitle:(NSString *)title target:(id)target action:(CKComponentAction)action
++ (instancetype)newWithTitle:(NSString *)title
 {
-  static const CKComponentViewAttribute buttonActionAttribute = {
-    "CKMButtonComponentActionAttribute",
-    ^(NSButton *aButton, id value) {
-      aButton.action = NSSelectorFromString(value);
-    }
-  };
-  
+  return [self newWithView:{} title:title];
+}
+
++ (instancetype)newWithView:(CKComponentViewConfiguration)view title:(NSString *)title
+{
+  // UGH, we need to cleanup CKComponentViewConfiguration's initializers!
+  CKComponentViewClass vc = view.viewClass();
+  if (!view.viewClass().hasView()) {
+    vc = {[NSButton class]};
+  }
+
+  CKViewComponentAttributeValueMap attrs = *view.attributes();
+  attrs.insert({
+      {@selector(setButtonType:), @(NSMomentaryLightButton)},
+      {@selector(setBezelStyle:), @(NSRoundedBezelStyle)},
+      {@selector(setTitle:), title},
+  });
+
   CKMButtonComponent *c =
   [super
    newWithView:{
-     {[NSButton class]},
-     {
-       {@selector(setButtonType:), @(NSMomentaryLightButton)},
-       {@selector(setBezelStyle:), @(NSRoundedBezelStyle)},
-       {@selector(setTitle:), title},
-       {@selector(setTarget:), target},
-       {buttonActionAttribute, NSStringFromSelector(action)}
-     },
+     std::move(vc),
+     std::move(attrs),
    }
    size:{}];
   if (c) {

@@ -4,6 +4,8 @@
 
 @interface CKMButtonComponent : CKComponent
 
-+ (instancetype)newWithTitle:(NSString *)title target:(id)target action:(CKComponentAction)action;
++ (instancetype)newWithTitle:(NSString *)title;
+
++ (instancetype)newWithView:(CKComponentViewConfiguration)view title:(NSString *)title;
 
 @end

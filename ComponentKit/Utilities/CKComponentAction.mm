@@ -145,11 +145,11 @@ CKComponentViewAttributeValue CKComponentActionAttribute(CKComponentAction actio
   return {
     {
       identifier,
-      ^(UIControl *control, id value){
+      ^(NSControl *control, id value){
         control.target = forwarder;
         control.action = @selector(handleControlEventFromSender:withEvent:);
       },
-      ^(UIControl *control, id value){
+      ^(NSControl *control, id value){
         control.target = nil;
         control.action = NULL;
       }

@@ -43,7 +43,7 @@
     for (NSInteger j = 0; j <= idx; j++) {
       [ms appendFormat:@" %c", c];
     }
-    [data addObject:[ms copy]];
+    [data addObject:@[@(idx), [ms copy]]];
   }
 
   [self.hostingView updateModel:data mode:CKUpdateModeSynchronous];

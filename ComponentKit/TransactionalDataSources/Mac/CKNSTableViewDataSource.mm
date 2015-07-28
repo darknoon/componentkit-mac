@@ -22,6 +22,7 @@
 #import "CKTransactionalComponentDataSourceItem.h"
 #import "CKTransactionalComponentDataSourceAppliedChanges.h"
 #import "CKTransactionalComponentDataSourceChangeset.h"
+#import "CKComponentDataSourceAttachController.h"
 
 #import "CKComponent.h"
 
@@ -35,7 +36,7 @@
 @implementation CKNSTableViewDataSource
 {
   CKTransactionalComponentDataSource *_componentDataSource;
-  NSMapTable *_cellToItemMap;
+  CKComponentDataSourceAttachController *_attachController;
 }
 
 CK_FINAL_CLASS([CKNSTableViewDataSource class]);
@@ -59,8 +60,8 @@ CK_FINAL_CLASS([CKNSTableViewDataSource class]);
     _tableView = tableView;
     _tableView.dataSource = self;
     _tableView.delegate = self;
-    
-    _cellToItemMap = [NSMapTable weakToStrongObjectsMapTable];
+
+    _attachController = [[CKComponentDataSourceAttachController alloc] init];
   }
   return self;
 }
@@ -103,18 +104,15 @@ CK_FINAL_CLASS([CKNSTableViewDataSource class]);
   static NSString *reuseIdentifier = @"ComponentKit";
 
   // Dequeue a reusable cell for this identifer
-  NSView *v = [tableView makeViewWithIdentifier:reuseIdentifier owner:nil];
-  if (!v) {
-    v = [[NSView alloc] initWithFrame:CGRect{{0,0}, {100, 100}}];
-    v.identifier = reuseIdentifier;
+  NSView *cell = [tableView makeViewWithIdentifier:reuseIdentifier owner:nil];
+  if (!cell) {
+    cell = [[CKComponentRootView alloc] initWithFrame:CGRectZero];
+    cell.identifier = reuseIdentifier;
   }
 
   CKTransactionalComponentDataSourceItem *item = [[_componentDataSource state] objectAtIndexPath:[NSIndexPath indexPathForItem:row inSection:0]];
-  const CKComponentLayout &layout = item.layout;
-
-  CKMountComponentLayout(layout, v, nil, nil);
-
-  return v;
+  [_attachController attachComponentLayout:item.layout withScopeIdentifier:item.scopeRoot.globalIdentifier toView:cell];
+  return cell;
 }
 
 - (CGFloat)tableView:(NSTableView *)tableView heightOfRow:(NSInteger)row
@@ -136,10 +134,23 @@ static NSIndexSet *firstSectionIndexSet(NSSet *indices) {
   return [s copy];
 }
 
+- (void)_detachComponentLayoutForRemovedItemsAtIndexPaths:(NSSet *)removedIndexPaths
+                                                  inState:(CKTransactionalComponentDataSourceState *)state
+{
+  for (NSIndexPath *indexPath in removedIndexPaths) {
+    CKComponentScopeRootIdentifier identifier = [[[state objectAtIndexPath:indexPath] scopeRoot] globalIdentifier];
+    [_attachController detachComponentLayoutWithScopeIdentifier:identifier];
+  }
+}
+
 - (void)transactionalComponentDataSource:(CKTransactionalComponentDataSource *)dataSource
                   didModifyPreviousState:(CKTransactionalComponentDataSourceState *)previousState
                        byApplyingChanges:(CKTransactionalComponentDataSourceAppliedChanges *)changes
 {
+
+  // For some unknown reason, this needs to be called outside of the -beginUpdates / -endUpdates block or the height gets set to 0
+  [_tableView noteHeightOfRowsWithIndexesChanged:firstSectionIndexSet(changes.updatedIndexPaths)];
+
   [_tableView beginUpdates];
 
   [_tableView removeRowsAtIndexes:firstSectionIndexSet(changes.removedIndexPaths)
@@ -148,6 +159,7 @@ static NSIndexSet *firstSectionIndexSet(NSSet *indices) {
   [_tableView insertRowsAtIndexes:firstSectionIndexSet(changes.insertedIndexPaths)
                     withAnimation:NSTableViewAnimationEffectNone];
 
+
   [_tableView reloadDataForRowIndexes:firstSectionIndexSet(changes.updatedIndexPaths)
                         columnIndexes:[NSIndexSet indexSetWithIndexesInRange:NSRange{.length = NSUInteger(_tableView.numberOfColumns)}]];
 
@@ -155,7 +167,10 @@ static NSIndexSet *firstSectionIndexSet(NSSet *indices) {
     [_tableView moveRowAtIndex:key.row toIndex:obj.row];
   }];
 
+  [self _detachComponentLayoutForRemovedItemsAtIndexPaths:changes.removedIndexPaths inState:previousState];
+
   [_tableView endUpdates];
 }
+
 
 @end

@@ -10,34 +10,18 @@
 
 #import "CKMTableCellComponentProvider.h"
 
+#import "CKMSampleExpandableComponent.h"
+
 @implementation CKMTableCellComponentProvider
 
 + (CKComponent *)componentForModel:(id<NSObject>)model context:(id<NSObject>)context
 {
-  NSString *string = (NSString *)model;
+  NSArray *mod = (NSArray *)model;
+  NSString *string = (NSString *)mod[1];
+  NSInteger idx = [(NSNumber *)mod[0] integerValue];
+  bool expanded = mod.count > 2 ? [mod[2] boolValue] : false;
 
-  return [CKStackLayoutComponent
-          newWithView:{}
-          size:{.width = 320}
-          style:{CKStackLayoutDirectionHorizontal}
-          children:{
-            {[CKMTextLabelComponent
-             newWithTextAttributes:{
-               .text = string,
-               .color = [NSColor secondaryLabelColor],
-               .backgroundColor = [NSColor clearColor],
-             }
-             viewAttributes:{}
-             size:{
-               .maxWidth = 150,
-             }]},
-            {[CKMButtonComponent
-              newWithTitle: @"Do Something"
-             target:nil
-             action:nil]},
-          }];
-
+  return [CKMSampleExpandableComponent newWithString:string index:idx expanded:expanded];
 }
-
 
 @end

@@ -12,6 +12,7 @@
 
 #import "CKMSampleTableComponent.h"
 #import "CKMTableCellComponentProvider.h"
+#import "CKMNSScrollView.h"
 
 #import <ComponentKit/CKStackLayoutComponent.h>
 
@@ -38,7 +39,7 @@
               .flexGrow = YES, .flexBasis = 0.0},
 
             {[CKMSampleTableComponent
-              newWithScrollView:{{[NSScrollView class]},
+              newWithScrollView:{{[CKMNSScrollView class]},
                 {
                   {@selector(setBackgroundColor:), [NSColor lightGrayColor]},
                   {@selector(setScrollerStyle:), @(NSScrollerStyleOverlay)},
@@ -64,13 +65,9 @@
               }
               children:{
                 {[CKMButtonComponent
-                  newWithTitle:@"Flexible width"
-                  target:nil
-                  action:nil], .flexGrow = YES},
+                  newWithTitle:@"Flexible width"], .flexGrow = YES},
                 {[CKMButtonComponent
-                  newWithTitle:@"Fixed width"
-                  target:nil
-                  action:nil]},
+                  newWithTitle:@"Fixed width"]},
               }],
             .spacingBefore = 5},
           }];
