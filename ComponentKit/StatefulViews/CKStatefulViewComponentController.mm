@@ -42,6 +42,11 @@
   NSAssert(false, @"Should be implemented by subclasses.");
 }
 
++ (NSInteger)maximumPoolSize:(id)context
+{
+  return -1;
+}
+
 - (UIView *)statefulView
 {
   return _statefulView;
