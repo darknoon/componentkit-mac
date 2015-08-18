@@ -308,4 +308,9 @@ static void *kRootComponentMountedViewKey = &kRootComponentMountedViewKey;
   return _scopeHandle ? @(_scopeHandle.globalIdentifier) : nil;
 }
 
+- (CKComponentScopeHandleIdentifier)globalIdentifier
+{
+  return _scopeHandle.globalIdentifier;
+}
+
 @end
