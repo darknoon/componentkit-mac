@@ -8,7 +8,7 @@
  *
  */
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 #import "CKTransactionalComponentDataSource.h"
 
@@ -37,6 +37,15 @@
 - (void)applyChangeset:(CKTransactionalComponentDataSourceChangeset *)changeset
                   mode:(CKUpdateMode)mode
               userInfo:(NSDictionary *)userInfo;
+
+/**
+ @return The model associated with a certain index path in the collectionView.
+
+ As stated above components are generated asynchronously and on a backgorund thread. This means that a changeset is enqueued
+ and applied asynchronously when the corresponding component tree is generated. For this reason always use this method when you
+ want to retrieve the model associated to a certain index path in the table view (e.g in didSelectRowAtIndexPath: )
+ */
+- (id<NSObject>)modelForItemAtIndexPath:(NSIndexPath *)indexPath;
 
 /**
  @return The layout size of the component tree at a certain indexPath. Use this to access the component sizes for instance in a
