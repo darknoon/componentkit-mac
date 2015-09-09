@@ -40,7 +40,8 @@
     NSInteger idx = i % ('z' - 'a' + 1);
     char c = 'a' + (char)idx;
     // Repeat idx times
-    for (NSInteger j = 0; j <= idx; j++) {
+    [ms appendFormat:@"%c", c];
+    for (NSInteger j = 1; j <= idx; j++) {
       [ms appendFormat:@" %c", c];
     }
     [data addObject:[ms copy]];

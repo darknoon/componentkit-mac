@@ -22,15 +22,17 @@
           style:{CKStackLayoutDirectionHorizontal}
           children:{
             {[CKMTextLabelComponent
-             newWithTextAttributes:{
-               .text = string,
-               .color = [NSColor secondaryLabelColor],
-               .backgroundColor = [NSColor clearColor],
-             }
-             viewAttributes:{}
-             size:{
-               .maxWidth = 150,
-             }]},
+              newWithTextAttributes:{
+                .text = string,
+                .color = [NSColor labelColor],
+              }
+              viewAttributes:{}
+              size:{
+                .maxWidth = 150,
+              }],
+              .spacingBefore = 2, // If you drag in a default table view in IB, you get this spacing
+              .spacingAfter = 10, // IB suggests this if you put a label next to a button
+            },
             {[CKMButtonComponent
               newWithTitle: @"Do Something"
              target:nil

@@ -135,18 +135,17 @@ static CKTransactionalComponentDataSourceChangeset *insertItems(NSArray *models,
 }
 
 - (CK::Component::MountResult)mountInContext:(const CK::Component::MountContext &)context
- size:(const CGSize)size
-children:(std::shared_ptr<const std::vector<CKComponentLayoutChild>>)children
-supercomponent:(CKComponent *)supercomponent
+                                      layout:(const CKComponentLayout &)layout
+                              supercomponent:(CKComponent *)supercomponent
 {
-  auto result = [super mountInContext:context size:size children:children supercomponent:supercomponent];
+  auto result = [super mountInContext:context layout:layout supercomponent:supercomponent];
 
   // Mount manually
   NSScrollView *scroll = (NSScrollView *)self.viewContext.view;
 
   // Mount the tableView in the scrollView
 
-  auto &tableLayout = (*children)[0].layout;
+  auto &tableLayout = (*layout.children)[0].layout;
 
   CKMountComponentLayout(tableLayout, scroll.contentView, nil, nil);
 

@@ -56,7 +56,7 @@
   rect.size.height = 24.0;
   rect.size.width += 14.0 * 2;  // for padding around button's title
   rect.size.width = ceil(rect.size.width);
-  return {self, constrainedSize.clamp(rect.size)};
+  return {self, constrainedSize.clamp(rect.size), {}, nil, {.left = -6, .right = -6}};
 }
 
 @end

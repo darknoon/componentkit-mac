@@ -138,18 +138,18 @@ struct CKComponentMountInfo {
       CKAssert(v.ck_component == self, @"");
     }
 
+    CGRect frame = UIEdgeInsetsInsetRect({effectiveContext.position, layout.size}, layout.alignmentRectInsets);
 #if TARGET_OS_IPHONE
     const CGPoint anchorPoint = v.layer.anchorPoint;
-    CGRect frame = UIEdgeInsetsInsetRect({effectiveContext.position, layout.size}, layout.alignmentRectInsets);
     [v setCenter:frame.origin + CGPoint({layout.size.width * anchorPoint.x, layout.size.height * anchorPoint.y})];
     [v setBounds:{v.bounds.origin, frame.size}];
 #else
     const CGPoint anchorPoint = v.layer.anchorPoint;
-    CGRect frame = {
-      .origin = effectiveContext.position + CGPoint({size.width * anchorPoint.x, size.height * anchorPoint.y}),
-      .size = size,
+    CGRect viewFrame = {
+      .origin = frame.origin + CGPoint({frame.size.width * anchorPoint.x, frame.size.height * anchorPoint.y}),
+      .size = frame.size,
     };
-    v.frame = UIEdgeInsetsInsetRect(frame, alignmentRectInsets);
+    v.frame = viewFrame;
 #endif
 
     _mountInfo->viewContext = {v, {{0,0}, v.bounds.size}};
