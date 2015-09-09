@@ -6,6 +6,10 @@
 
 #import <ComponentKit/CKComponentSubclass.h>
 
+static NSFont *labelFontOrDefault(NSFont *font) {
+  return font ?: [NSFont labelFontOfSize:[NSFont systemFontSizeForControlSize:NSRegularControlSize]];
+}
+
 @implementation CKMTextLabelComponent {
   CKMTextLabelComponentAttrs _attrs;
 }
@@ -22,7 +26,7 @@
     {@selector(setTextColor:), attrs.color},
     {@selector(setBezeled:), @NO},
     {@selector(setAlignment:), @(attrs.alignment)},
-    {@selector(setFont:), attrs.font},
+    {@selector(setFont:), labelFontOrDefault(attrs.font)},
   };
   viewAttributes.insert(addl.begin(), addl.end());
 
@@ -58,7 +62,7 @@
     isinf(constrainedSize.max.height) ? 0.0 : CGFLOAT_MAX,
   };
 
-  NSFont *font = _attrs.font ?: [NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:NSRegularControlSize]];
+  NSFont *font = labelFontOrDefault(_attrs.font);
   
   NSDictionary *attributes = @{ NSFontAttributeName: font };
 
@@ -66,9 +70,7 @@
                                               options:NSStringDrawingUsesLineFragmentOrigin
                                            attributes:attributes];
 
-  rect = UIEdgeInsetsInsetRect(rect, {.left = -5, .right = -5});
-
-  return {self, constrainedSize.clamp(rect.size)};
+  return {self, constrainedSize.clamp(rect.size), {}, nil, {.left = -2, .right = -2}};
 }
 
 @end
