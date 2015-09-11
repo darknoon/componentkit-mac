@@ -20,15 +20,23 @@
   NSUInteger _maximumNumberOfLines;
 }
 
+// Added to SDK in 10.11. Will crash on older OS, but we're not using this now.
+#if __MAC_OS_X_VERSION_MAX_ALLOWED < 101100
 - (instancetype)initWithSize:(CGSize)size;
+#endif
+
 @end
 
 @implementation _CKTextContainer
 
+
+// Added to SDK in 10.11. Will crash on older OS, but we're not using this now.
+#if __MAC_OS_X_VERSION_MAX_ALLOWED < 101100
 - (instancetype)initWithSize:(CGSize)size
 {
   return [super initWithContainerSize:size];
 }
+#endif
 
 - (void)setLineBreakMode:(NSLineBreakMode)lineBreakMode
 {

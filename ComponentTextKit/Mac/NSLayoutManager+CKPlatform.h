@@ -10,8 +10,14 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import <Availability.h>
+
+#if __MAC_OS_X_VERSION_MAX_ALLOWED < 101100
+
 @interface NSLayoutManager (CKPlatform)
 
 - (void)enumerateLineFragmentsForGlyphRange:(NSRange)glyphRange usingBlock:(void (^)(CGRect rect, CGRect usedRect, NSTextContainer *textContainer, NSRange glyphRange, BOOL *stop))block;
 
 @end
+
+#endif
