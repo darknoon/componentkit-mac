@@ -70,6 +70,8 @@ static NSFont *labelFontOrDefault(NSFont *font) {
                                               options:NSStringDrawingUsesLineFragmentOrigin
                                            attributes:attributes];
 
+  rect.size.width = ceil(rect.size.width);
+
   return {self, constrainedSize.clamp(rect.size), {}, nil, {.left = -2, .right = -2}};
 }
 
