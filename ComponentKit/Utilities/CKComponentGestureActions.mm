@@ -193,7 +193,10 @@ CKComponentViewAttributeValue CKComponentGestureAttribute(Class gestureRecognize
   };
 }
 
-@implementation CKComponentGestureActionForwarder
+@implementation CKComponentGestureActionForwarder {
+  id _cachedResponder;
+  CKComponent *_cachedComponent;
+}
 
 + (instancetype)sharedInstance
 {
@@ -208,8 +211,29 @@ CKComponentViewAttributeValue CKComponentGestureAttribute(Class gestureRecognize
 - (void)handleGesture:(UIGestureRecognizer *)recognizer
 {
   // If the action can be handled by the sender itself, send it there instead of looking up the chain.
-  CKComponentActionSend([recognizer ck_componentAction], recognizer.view.ck_component, recognizer,
-                        CKComponentActionSendBehaviorStartAtSender);
+  // We need to cache the responder in case the gesture itself updates the component, messing up the responder chain.
+  id component = recognizer.view.ck_component;
+  SEL action = [recognizer ck_componentAction];
+  id responder;
+  if (component) {
+    responder = [component targetForAction:action withSender:component];
+  } else {
+    responder = _cachedResponder;
+    component = _cachedComponent;
+  }
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+  [responder performSelector:action withObject:component withObject:recognizer];
+#pragma clang diagnostic pop
+
+  if (recognizer.state == NSGestureRecognizerStateBegan) {
+    _cachedResponder = responder;
+    _cachedComponent = component;
+  } else if (recognizer.state == NSGestureRecognizerStateEnded || recognizer.state == NSGestureRecognizerStateCancelled) {
+    _cachedResponder = nil;
+    _cachedComponent = nil;
+  }
 }
 
 @end
