@@ -12,7 +12,7 @@
 
 @implementation CKMTableCellComponentProvider
 
-+ (CKComponent *)componentForModel:(id<NSObject>)model context:(id<NSObject>)context
++ (CKComponent *)componentWithModel:(id)model selected:(BOOL)selected
 {
   NSString *string = (NSString *)model;
 

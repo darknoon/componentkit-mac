@@ -12,6 +12,8 @@
 
 #import <ComponentKit/CKComponentProvider.h>
 
+extern "C" NSString *const kCKMSamplePasteboardType;
+
 @interface CKMSampleComponentProvider : NSObject <CKComponentProvider>
 
 @end

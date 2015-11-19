@@ -10,10 +10,12 @@
 
 #import "CKMSampleComponentProvider.h"
 
-#import "CKMSampleTableComponent.h"
 #import "CKMTableCellComponentProvider.h"
 
 #import <ComponentKit/CKStackLayoutComponent.h>
+#import <ComponentKit/CKMTableComponent.h>
+
+NSString *const kCKMSamplePasteboardType = @"kCKMSamplePasteboardType";
 
 @implementation CKMSampleComponentProvider
 
@@ -37,7 +39,7 @@
               size:{}],
               .flexGrow = YES, .flexBasis = 0.0},
 
-            {[CKMSampleTableComponent
+            {[CKMTableComponent
               newWithScrollView:{{[NSScrollView class]},
                 {
                   {@selector(setBackgroundColor:), [NSColor lightGrayColor]},
@@ -47,11 +49,23 @@
               }
               tableView:{{[NSTableView class]},
                 {
+                  {@selector(setAllowsMultipleSelection:), @YES},
                   {@selector(setBackgroundColor:), [NSColor lightGrayColor]},
                   {@selector(setColumnAutoresizingStyle:), @(NSTableViewUniformColumnAutoresizingStyle)},
+                  {@selector(registerForDraggedTypes:), @[kCKMSamplePasteboardType]},
+                  CKComponentDelegateAttribute(@selector(setDataSource:), {
+                    /* We list this selector but do not implement it ourselves to silence a log from NSTableView
+                     * because it's momentarily set to this dataSource without the overrides from CKMTableComponent */
+                    @selector(numberOfRowsInTableView:),
+
+                    @selector(tableView:writeRowsWithIndexes:toPasteboard:),
+                    @selector(tableView:validateDrop:proposedRow:proposedDropOperation:),
+                    @selector(tableView:acceptDrop:row:dropOperation:),
+                  })
                 }
               }
               models:objects
+              selection:nil
               componentProvider:[CKMTableCellComponentProvider class]
               size:{}],
               .flexGrow = YES, },
