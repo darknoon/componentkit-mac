@@ -65,12 +65,13 @@
               children:{
                 {[CKMButtonComponent
                   newWithTitle:@"Flexible width"
-                  target:nil
-                  action:nil], .flexGrow = YES},
+                  type:NSMomentaryLightButton
+                  viewAttributes:{}],
+                  .flexGrow = YES},
                 {[CKMButtonComponent
                   newWithTitle:@"Fixed width"
-                  target:nil
-                  action:nil]},
+                  type:NSMomentaryLightButton
+                  viewAttributes:{}]},
               }],
             .spacingBefore = 5},
           }];
