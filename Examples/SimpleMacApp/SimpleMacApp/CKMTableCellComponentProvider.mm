@@ -35,8 +35,16 @@
             },
             {[CKMButtonComponent
               newWithTitle: @"Do Something"
-             target:nil
-             action:nil]},
+              type:NSMomentaryLightButton
+              viewAttributes:{}]},
+            {[CKMButtonComponent
+              newWithTitle: @"Checkbox!!"
+              type:NSSwitchButton
+              viewAttributes:{}]},
+            {[CKMButtonComponent
+              newWithTitle: @"Radio!!"
+              type:NSRadioButton
+              viewAttributes:{}]},
           }];
 
 }

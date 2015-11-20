@@ -8,32 +8,31 @@
 
 @implementation CKMButtonComponent {
   NSString *_title;
+  NSButtonType _type;
 }
 
-+ (instancetype)newWithTitle:(NSString *)title target:(id)target action:(CKComponentAction)action
++ (instancetype)newWithTitle:(NSString *)title type:(NSButtonType)type viewAttributes:(CKViewComponentAttributeValueMap)viewAttributes
 {
-  static const CKComponentViewAttribute buttonActionAttribute = {
-    "CKMButtonComponentActionAttribute",
-    ^(NSButton *aButton, id value) {
-      aButton.action = NSSelectorFromString(value);
-    }
-  };
-  
+  viewAttributes.insert({@selector(setTitle:), title});
+  viewAttributes.insert({@selector(setButtonType:), @(type)});
+
+  // Add a default bezel style if one is not specified
+  if (viewAttributes.find(@selector(setBezelStyle:)) == viewAttributes.end()) {
+    viewAttributes.insert({@selector(setBezelStyle:), @(NSRoundedBezelStyle)});
+  }
+
   CKMButtonComponent *c =
   [super
    newWithView:{
      {[NSButton class]},
      {
-       {@selector(setButtonType:), @(NSMomentaryLightButton)},
-       {@selector(setBezelStyle:), @(NSRoundedBezelStyle)},
-       {@selector(setTitle:), title},
-       {@selector(setTarget:), target},
-       {buttonActionAttribute, NSStringFromSelector(action)}
+       std::move(viewAttributes),
      },
    }
    size:{}];
   if (c) {
     c->_title = title;
+    c->_type = type;
   }
   
   return c;
@@ -56,7 +55,15 @@
   rect.size.height = 24.0;
   rect.size.width += 14.0 * 2;  // for padding around button's title
   rect.size.width = ceil(rect.size.width);
-  return {self, constrainedSize.clamp(rect.size), {}, nil, {.left = -6, .right = -6}};
+
+  UIEdgeInsets insets = {.left = -6, .right = -6};
+
+  // Our insets need to be different for checkbox/radio button
+  if (_type == NSSwitchButton || _type == NSRadioButton) {
+    insets = UIEdgeInsetsZero;
+  }
+
+  return {self, constrainedSize.clamp(rect.size), {}, nil, insets};
 }
 
 @end
