@@ -64,6 +64,11 @@ std::string CKIdentifierFromDelegateForwarderSelectors(const CKComponentForwarde
   return [responder targetForAction:aSelector withSender:responder];
 }
 
+- (const CKComponentForwardedSelectors &)selectors
+{
+  return _selectors;
+}
+
 @end
 
 

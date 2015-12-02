@@ -38,6 +38,8 @@ std::string CKIdentifierFromDelegateForwarderSelectors(const CKComponentForwarde
  */
 @property (nonatomic, weak) UIView *view;
 
+@property (nonatomic, readonly) const CKComponentForwardedSelectors& selectors;
+
 @end
 
 

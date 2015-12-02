@@ -70,6 +70,6 @@ CKComponentViewAttributeValue CKComponentDelegateAttribute(SEL selector,
 
       }
     },
-    @YES // Bogus value, we don't use it.
+    @(CKIdentifierFromDelegateForwarderSelectors(selectors).c_str()),
   };
 }
