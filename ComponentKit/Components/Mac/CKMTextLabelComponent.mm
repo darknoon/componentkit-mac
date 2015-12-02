@@ -18,6 +18,11 @@ static NSFont *labelFontOrDefault(NSFont *font) {
                        viewAttributes:(CKViewComponentAttributeValueMap)viewAttributes
                                  size:(CKComponentSize)size
 {
+  static auto prop = CKComponentViewAttribute{"cell_setLineBreakMode", [](id view, id object) {
+    NSTextField *tf = (NSTextField *)view;
+    tf.lineBreakMode = (NSLineBreakMode)[object integerValue];
+  }};
+  
   CKViewComponentAttributeValueMap addl = {
     {@selector(setEditable:), @NO},
     {@selector(setSelectable:), @NO},
@@ -27,6 +32,7 @@ static NSFont *labelFontOrDefault(NSFont *font) {
     {@selector(setBezeled:), @NO},
     {@selector(setAlignment:), @(attrs.alignment)},
     {@selector(setFont:), labelFontOrDefault(attrs.font)},
+    {prop, @(attrs.lineBreakMode)},
   };
   viewAttributes.insert(addl.begin(), addl.end());
 
@@ -59,12 +65,19 @@ static NSFont *labelFontOrDefault(NSFont *font) {
 {
   const CGSize constraint = {
     isinf(constrainedSize.max.width) ? CGFLOAT_MAX : constrainedSize.max.width,
-    isinf(constrainedSize.max.height) ? 0.0 : CGFLOAT_MAX,
+    isinf(constrainedSize.max.height) ? CGFLOAT_MAX : constrainedSize.max.height,
   };
 
   NSFont *font = labelFontOrDefault(_attrs.font);
+
+  NSMutableParagraphStyle *ps = [[NSMutableParagraphStyle alloc] init];
+  ps.lineBreakMode = _attrs.lineBreakMode;
   
-  NSDictionary *attributes = @{ NSFontAttributeName: font };
+  NSDictionary *attributes = @{
+                               NSFontAttributeName: font,
+                               NSParagraphStyleAttributeName: ps,
+                               };
+  
 
   CGRect rect = [_attrs.text ckm_boundingRectWithSize:constraint
                                               options:NSStringDrawingUsesLineFragmentOrigin

@@ -11,6 +11,7 @@ struct CKMTextLabelComponentAttrs {
   NSTextAlignment alignment;
   NSColor *color;
   NSColor *backgroundColor;
+  NSLineBreakMode lineBreakMode;
 };
 
 @interface CKMTextLabelComponent : CKComponent
