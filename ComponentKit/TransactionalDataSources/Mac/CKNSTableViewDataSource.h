@@ -20,6 +20,12 @@
 
 @protocol CKComponentProvider;
 @class CKTransactionalComponentDataSourceChangeset;
+@class CKTransactionalComponentDataSourceConfiguration;
+
+/**
+ * If you add a value for this key to the userInfo on a changeset, it will change the selection to the specified NSIndexSet when applied to the table view.
+ */
+extern NSString *const CKNSTableViewDataSourceSelectionKey;
 
 /**
  This class is an implementation of a `NSTableViewDataSource` and `NSTableViewDataDelegate` that can be used along with components. For each set of changes (i.e insertion/deletion/update
@@ -33,16 +39,12 @@
 @interface CKNSTableViewDataSource : NSObject <NSTableViewDataSource, NSTableViewDelegate>
 
 /**
- Designated initializer.
-
- 
- @param componentProvider Class implementing the pure function turning a model into components.@see CKComponentProvider.
- @param context Will be passed to your componentProvider. @see CKComponentProvider.
+ @discussion The NSTableView's dataSource and delegate properties are NOT modified, but it is expected that you set them to this class or send the appropriate methods.
+ @param tableView The tableView is held strongly.
+ @param configuration The configuration. You specify the component provider, context and size of the tableView through this object.
  */
 - (instancetype)initWithTableView:(NSTableView *)tableView
-                componentProvider:(Class<CKComponentProvider>)componentProvider
-                          context:(id<NSObject>)context;
-
+                    configuration:(CKTransactionalComponentDataSourceConfiguration *)configuration NS_DESIGNATED_INITIALIZER;
 
 /**
  * At the moment, is verboten to add more than one section (any beyond the first will not be displayed).
@@ -55,7 +57,7 @@
 /**
  Updates context to the new value and enqueues update changeset in order to rebuild component tree.
  */
-//TODO: - (void)updateContextAndEnqeueReload:(id)newContext;
+- (void)updateContextAndEnqueueReload:(id)newContext;
 
 /**
  @return The model associated with a certain index path in the collectionView.

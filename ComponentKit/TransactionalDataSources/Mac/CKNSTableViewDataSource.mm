@@ -22,6 +22,7 @@
 #import "CKTransactionalComponentDataSourceItem.h"
 #import "CKTransactionalComponentDataSourceAppliedChanges.h"
 #import "CKTransactionalComponentDataSourceChangeset.h"
+#import "CKComponentDataSourceAttachController.h"
 
 #import "CKComponent.h"
 
@@ -29,13 +30,16 @@
 #import "CKComponentScopeRoot.h"
 #import "CKTransactionalComponentDataSourceConfiguration.h"
 
+NSString *const CKNSTableViewDataSourceSelectionKey = @"selection";
+
 @interface CKNSTableViewDataSource () <CKTransactionalComponentDataSourceListener>
 @end
 
 @implementation CKNSTableViewDataSource
 {
+  CKTransactionalComponentDataSourceConfiguration *_config;
   CKTransactionalComponentDataSource *_componentDataSource;
-  NSMapTable *_cellToItemMap;
+  CKComponentDataSourceAttachController *_attachController;
 }
 
 CK_FINAL_CLASS([CKNSTableViewDataSource class]);
@@ -43,24 +47,18 @@ CK_FINAL_CLASS([CKNSTableViewDataSource class]);
 #pragma mark - Lifecycle
 
 - (instancetype)initWithTableView:(NSTableView *)tableView
-                componentProvider:(Class<CKComponentProvider>)componentProvider
-                          context:(id<NSObject>)context
+                    configuration:(CKTransactionalComponentDataSourceConfiguration *)configuration
 {
   self = [super init];
   if (self) {
-    auto config = [[CKTransactionalComponentDataSourceConfiguration alloc] initWithComponentProvider:componentProvider
-                                                                                             context:context
-                                                                                           sizeRange:CKSizeRange()];
-
-    _componentDataSource = [[CKTransactionalComponentDataSource alloc] initWithConfiguration:config];
-
-    [_componentDataSource addListener:self];
-
-    _tableView = tableView;
-    _tableView.dataSource = self;
-    _tableView.delegate = self;
+    _config = configuration;
     
-    _cellToItemMap = [NSMapTable weakToStrongObjectsMapTable];
+    _componentDataSource = [[CKTransactionalComponentDataSource alloc] initWithConfiguration:_config];
+    [_componentDataSource addListener:self];
+    
+    _attachController = [[CKComponentDataSourceAttachController alloc] init];
+    
+    _tableView = tableView;
   }
   return self;
 }
@@ -77,6 +75,18 @@ CK_FINAL_CLASS([CKNSTableViewDataSource class]);
               userInfo:(NSDictionary *)userInfo
 {
   [_componentDataSource applyChangeset:changeset mode:mode userInfo:userInfo];
+}
+
+- (void)updateContextAndEnqueueReload:(id)newContext
+{
+  CKAssertMainThread();
+  
+  // Update just the context
+  _config = [[CKTransactionalComponentDataSourceConfiguration alloc] initWithComponentProvider:_config.componentProvider
+                                                                                       context:newContext
+                                                                                     sizeRange:_config.sizeRange];
+
+  [_componentDataSource updateConfiguration:_config mode:CKUpdateModeSynchronous userInfo:nil];
 }
 
 - (id<NSObject>)modelForRow:(NSInteger)rowIndex
@@ -108,12 +118,10 @@ CK_FINAL_CLASS([CKNSTableViewDataSource class]);
     v = [[NSView alloc] initWithFrame:CGRect{{0,0}, {100, 100}}];
     v.identifier = reuseIdentifier;
   }
-
+  
   CKTransactionalComponentDataSourceItem *item = [[_componentDataSource state] objectAtIndexPath:[NSIndexPath indexPathForItem:row inSection:0]];
-  const CKComponentLayout &layout = item.layout;
-
-  CKMountComponentLayout(layout, v, nil, nil);
-
+  [_attachController attachComponentLayout:item.layout withScopeIdentifier:item.scopeRoot.globalIdentifier toView:v];
+  
   return v;
 }
 
@@ -136,26 +144,65 @@ static NSIndexSet *firstSectionIndexSet(NSSet *indices) {
   return [s copy];
 }
 
+- (void)_detachComponentLayoutForRemovedItemsAtIndexPaths:(NSSet *)removedIndexPaths
+                                                  inState:(CKTransactionalComponentDataSourceState *)state
+{
+  for (NSIndexPath *indexPath in removedIndexPaths) {
+    CKComponentScopeRootIdentifier identifier = [[[state objectAtIndexPath:indexPath] scopeRoot] globalIdentifier];
+    [_attachController detachComponentLayoutWithScopeIdentifier:identifier];
+  }
+}
+
 - (void)transactionalComponentDataSource:(CKTransactionalComponentDataSource *)dataSource
                   didModifyPreviousState:(CKTransactionalComponentDataSourceState *)previousState
                        byApplyingChanges:(CKTransactionalComponentDataSourceAppliedChanges *)changes
 {
-  [_tableView beginUpdates];
+  bool needsUpdate =
+     changes.removedIndexPaths.count > 0
+  || changes.insertedIndexPaths.count > 0
+  || changes.updatedIndexPaths.count > 0
+  || changes.movedIndexPaths.count > 0;
+  
+  // NSTableView updates
+  if (needsUpdate) {
+    [_tableView beginUpdates];
+    
+    if (changes.removedIndexPaths.count > 0) {
+      [_tableView removeRowsAtIndexes:firstSectionIndexSet(changes.removedIndexPaths)
+                        withAnimation:NSTableViewAnimationEffectNone];
+    }
+    
+    if (changes.insertedIndexPaths.count > 0) {
+      [_tableView insertRowsAtIndexes:firstSectionIndexSet(changes.insertedIndexPaths)
+                        withAnimation:NSTableViewAnimationEffectNone];
+    }
+    
+    if (changes.updatedIndexPaths.count > 0) {
+      [_tableView reloadDataForRowIndexes:firstSectionIndexSet(changes.updatedIndexPaths)
+                            columnIndexes:[NSIndexSet indexSetWithIndexesInRange:NSRange{.length = NSUInteger(_tableView.numberOfColumns)}]];
+    }
+    
+    [changes.movedIndexPaths enumerateKeysAndObjectsUsingBlock:^(NSIndexPath *key, NSIndexPath *obj, BOOL *stop) {
+      [_tableView moveRowAtIndex:key.row toIndex:obj.row];
+    }];
+    
+    [self _detachComponentLayoutForRemovedItemsAtIndexPaths:[changes removedIndexPaths]
+                                                    inState:previousState];
+    
+    [_tableView endUpdates];
+  }
+  
+  // Selection updates
+  NSIndexSet *selection = changes.userInfo[@"selection"];
+  NSIndexSet *currentSelection = _tableView.selectedRowIndexes;
+  if ([selection isKindOfClass:[NSIndexSet class]]) {
+    if (selection != currentSelection || ![selection isEqualToIndexSet:currentSelection]) {
+      [_tableView selectRowIndexes:selection byExtendingSelection:NO];
+      [_tableView scrollRowToVisible:selection.firstIndex];
+    }
+  }
+  
 
-  [_tableView removeRowsAtIndexes:firstSectionIndexSet(changes.removedIndexPaths)
-                    withAnimation:NSTableViewAnimationEffectNone];
-
-  [_tableView insertRowsAtIndexes:firstSectionIndexSet(changes.insertedIndexPaths)
-                    withAnimation:NSTableViewAnimationEffectNone];
-
-  [_tableView reloadDataForRowIndexes:firstSectionIndexSet(changes.updatedIndexPaths)
-                        columnIndexes:[NSIndexSet indexSetWithIndexesInRange:NSRange{.length = NSUInteger(_tableView.numberOfColumns)}]];
-
-  [changes.movedIndexPaths enumerateKeysAndObjectsUsingBlock:^(NSIndexPath *key, NSIndexPath *obj, BOOL *stop) {
-    [_tableView moveRowAtIndex:key.row toIndex:obj.row];
-  }];
-
-  [_tableView endUpdates];
 }
 
 @end
