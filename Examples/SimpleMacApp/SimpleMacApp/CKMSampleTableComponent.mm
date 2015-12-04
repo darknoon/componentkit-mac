@@ -66,9 +66,16 @@ static CKTransactionalComponentDataSourceChangeset *insertItems(NSArray *models,
 
   _tableView = self.tableView;
 
+  CKTransactionalComponentDataSourceConfiguration *config =
+  [[CKTransactionalComponentDataSourceConfiguration alloc] initWithComponentProvider:(Class<CKComponentProvider>)self.tableComponent->_cellProviderClass
+                                                                             context:self
+                                                                           sizeRange:{}];
+  
   _dataSource = [[CKNSTableViewDataSource alloc] initWithTableView:_tableView
-                                                 componentProvider:self.tableComponent->_cellProviderClass
-                                                           context:self];
+                                                     configuration:config];
+  
+  _tableView.dataSource = _dataSource;
+  _tableView.delegate = _dataSource;
 
 
   // Make sure we have 1 section
