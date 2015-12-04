@@ -47,6 +47,11 @@
 #import <ComponentKit/CKComponentPreparationQueueListener.h>
 #import <ComponentKit/CKComponentPreparationQueueTypes.h>
 #import <ComponentKit/CKComponentProvider.h>
+#if TARGET_OS_IPHONE
+#import <ComponentKit/CKCollectionViewTransactionalDataSource.h>
+#endif
+#import <ComponentKit/CKTransactionalComponentDataSourceChangeset.h>
+#import <ComponentKit/CKTransactionalComponentDataSourceConfiguration.h>
 //HostingView
 #import <ComponentKit/CKComponentFlexibleSizeRangeProvider.h>
 #import <ComponentKit/CKComponentHostingView.h>
