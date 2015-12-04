@@ -17,12 +17,7 @@ static NSFont *labelFontOrDefault(NSFont *font) {
 + (instancetype)newWithTextAttributes:(CKMTextLabelComponentAttrs)attrs
                        viewAttributes:(CKViewComponentAttributeValueMap)viewAttributes
                                  size:(CKComponentSize)size
-{
-  static auto prop = CKComponentViewAttribute{"cell_setLineBreakMode", [](id view, id object) {
-    NSTextField *tf = (NSTextField *)view;
-    tf.lineBreakMode = (NSLineBreakMode)[object integerValue];
-  }};
-  
+{  
   CKViewComponentAttributeValueMap addl = {
     {@selector(setEditable:), @NO},
     {@selector(setSelectable:), @NO},
@@ -32,7 +27,7 @@ static NSFont *labelFontOrDefault(NSFont *font) {
     {@selector(setBezeled:), @NO},
     {@selector(setAlignment:), @(attrs.alignment)},
     {@selector(setFont:), labelFontOrDefault(attrs.font)},
-    {prop, @(attrs.lineBreakMode)},
+    {@selector(setLineBreakMode:), @(attrs.lineBreakMode)},
   };
   viewAttributes.insert(addl.begin(), addl.end());
 
