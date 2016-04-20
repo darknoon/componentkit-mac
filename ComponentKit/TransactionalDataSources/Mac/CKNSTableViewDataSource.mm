@@ -193,7 +193,7 @@ static NSIndexSet *firstSectionIndexSet(NSSet *indices) {
   }
   
   // Selection updates
-  NSIndexSet *selection = changes.userInfo[@"selection"];
+  NSIndexSet *selection = changes.userInfo[CKNSTableViewDataSourceSelectionKey];
   NSIndexSet *currentSelection = _tableView.selectedRowIndexes;
   if ([selection isKindOfClass:[NSIndexSet class]]) {
     if (selection != currentSelection || ![selection isEqualToIndexSet:currentSelection]) {
