@@ -8,4 +8,8 @@
                       image:(NSImage *)image
                        size:(CKComponentSize)size;
 
++ (instancetype)newWithView:(const CKComponentViewConfiguration &)view
+                      image:(NSImage *)image;
+
+
 @end

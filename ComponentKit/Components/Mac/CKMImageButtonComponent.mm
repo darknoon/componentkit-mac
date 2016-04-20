@@ -26,4 +26,10 @@
           size:size];
 }
 
++ (instancetype)newWithView:(const CKComponentViewConfiguration &)view
+                      image:(NSImage *)image
+{
+  return [self newWithView:view image:image size:CKComponentSize::fromCGSize(image.size)];
+}
+
 @end
