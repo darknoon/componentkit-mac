@@ -75,7 +75,7 @@ namespace std {
   [newRoot registerAnnounceableEventsForController:newHandle.controller];
 
   CKComponentScopeFrame *newChild = [[CKComponentScopeFrame alloc] initWithHandle:newHandle];
-  const auto result = pair.frame->_children.insert({{componentClass, identifier}, newChild});
+  __unused const auto result = pair.frame->_children.insert({{componentClass, identifier}, newChild});
   CKAssert(result.second, @"Scope collision: attempting to create duplicate scope %@:%@", componentClass, identifier);
   return {.frame = newChild, .equivalentPreviousFrame = existingChild};
 }
@@ -94,7 +94,7 @@ namespace std {
   id identifier = oldFrame.identifier;
   CKAssert([oldFrame.frame isKindOfClass:[CKComponentScopeFrame class]], @"Can't inject with incorrect frame class.");
 
-  auto result = _children.insert({{componentClass, identifier}, oldFrame.frame});
+  __unused auto result = _children.insert({{componentClass, identifier}, oldFrame.frame});
 
   CKAssert(result.second, @"Scope collision: attempting to create duplicate scope %@:%@", componentClass, identifier);
 }
