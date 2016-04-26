@@ -17,7 +17,7 @@
 #import <ComponentKit/CKNetworkImageComponent.h>
 #import <ComponentKit/CKNetworkImageDownloading.h>
 #else
-
+#import <ComponentKit/CKMTableComponent.h>
 #endif
 #import <ComponentKit/CKImageComponent.h>
 

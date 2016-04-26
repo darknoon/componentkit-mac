@@ -1,9 +1,12 @@
 // Copyright 2004-present Facebook. All Rights Reserved.
 #import "CKMTableComponent.h"
 
+#import <ComponentKit/CKCompositeComponent.h>
+#import <ComponentKit/CKComponentController.h>
 #import <ComponentKit/CKComponentInternal.h>
 #import <ComponentKit/CKComponentSubclass.h>
 #import <ComponentKit/CKComponentMemoizer.h>
+#import <ComponentKit/CKComponentScope.h>
 #import <ComponentKit/CKNSTableViewDataSource.h>
 #import <ComponentKit/CKComponentViewInterface.h>
 #import <ComponentKit/CKTransactionalComponentDataSourceConfiguration.h>
@@ -163,7 +166,7 @@ static CKTransactionalComponentDataSourceChangeset *insertItems(NSArray *models,
   };
 }
 
-CKComponentDelegateForwarder *appendSelectorsToForwarder(CKComponentDelegateForwarder *existing, CKComponentForwardedSelectors selectors)
+NS_INLINE CKComponentDelegateForwarder *appendSelectorsToForwarder(CKComponentDelegateForwarder *existing, CKComponentForwardedSelectors selectors)
 {
   // Union our selectors with those of the existing delegate
   CKComponentForwardedSelectors neue = existing.selectors;

@@ -1,6 +1,6 @@
 // Copyright 2004-present Facebook. All Rights Reserved.
 
-#import <ComponentKit/ComponentKit.h>
+#import <ComponentKit/CKComponent.h>
 
 /**
  * A simple component to add async NSTableViews to your other component layouts.

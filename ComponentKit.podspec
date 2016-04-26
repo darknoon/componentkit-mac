@@ -27,5 +27,7 @@ Pod::Spec.new do |s|
   s.xcconfig = {
     'CLANG_CXX_LANGUAGE_STANDARD' => 'c++11',
     'CLANG_CXX_LIBRARY' => 'libc++',
+    'GCC_WARN_ABOUT_MISSING_PROTOTYPES' => 'YES',
+    'GCC_TREAT_WARNINGS_AS_ERRORS' => 'YES'
   }
 end
