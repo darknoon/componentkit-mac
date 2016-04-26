@@ -19,6 +19,8 @@
 
 @interface CKMRootViewController ()
 
+@property (nonatomic, copy) NSArray<NSString *> *model;
+
 @property (nonatomic, strong) CKComponentHostingView *hostingView;
 
 @end
@@ -47,11 +49,52 @@
     [data addObject:[ms copy]];
   }
 
-  [self.hostingView updateModel:data mode:CKUpdateModeSynchronous];
+  self.model = data;
 
   self.hostingView.frame = self.view.bounds;
   self.hostingView.autoresizingMask = (NSViewWidthSizable | NSViewHeightSizable);
   [self.view addSubview:self.hostingView];
+}
+
+- (void)setModel:(NSArray<NSString *> *)model
+{
+  if (_model == model || [_model isEqualToArray:model]) return;
+  _model = [model copy];
+  [self.hostingView updateModel:model mode:CKUpdateModeSynchronous];
+}
+
+#pragma mark - NSTableViewDataSource (Drag+Drop)
+
+- (BOOL)tableView:(NSTableView *)tableView writeRowsWithIndexes:(NSIndexSet *)rowIndexes toPasteboard:(NSPasteboard *)pboard
+{
+  NSData *data = [NSKeyedArchiver archivedDataWithRootObject:rowIndexes];
+  [pboard declareTypes:@[kCKMSamplePasteboardType] owner:self];
+  [pboard setData:data forType:kCKMSamplePasteboardType];
+  return YES;
+}
+
+- (NSDragOperation)tableView:(NSTableView *)tableView validateDrop:(id<NSDraggingInfo>)info proposedRow:(NSInteger)row proposedDropOperation:(NSTableViewDropOperation)dropOperation
+{
+  if (dropOperation == NSTableViewDropOn) {
+    return NSDragOperationNone;
+  }
+  return NSDragOperationMove;
+}
+
+- (BOOL)tableView:(NSTableView *)tableView acceptDrop:(id<NSDraggingInfo>)info row:(NSInteger)row dropOperation:(NSTableViewDropOperation)dropOperation
+{
+  if ([[info draggingPasteboard] dataForType:kCKMSamplePasteboardType]) {
+    NSPasteboard *pasteboard = [info draggingPasteboard];
+    NSIndexSet *rowIndexes = [NSKeyedUnarchiver unarchiveObjectWithData:[pasteboard dataForType:kCKMSamplePasteboardType]];
+
+    NSUInteger countBeforeRow = [rowIndexes countOfIndexesInRange:NSMakeRange(0, row)];
+    NSMutableArray *mutableModel = [self.model mutableCopy];
+    NSArray *objectsToInsert = [mutableModel objectsAtIndexes:rowIndexes];
+    [mutableModel removeObjectsAtIndexes:rowIndexes];
+    [mutableModel insertObjects:objectsToInsert atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(row - countBeforeRow, objectsToInsert.count)]];
+    self.model = mutableModel;
+  }
+  return NO;
 }
 
 @end

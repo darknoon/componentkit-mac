@@ -61,12 +61,24 @@ std::string CKIdentifierFromDelegateForwarderSelectors(const CKComponentForwarde
 - (id)forwardingTargetForSelector:(SEL)aSelector
 {
   CKComponent *responder = _view.ck_component;
+  if (!responder) {
+    NSLog(@"Nil responder for -forwardingTargetForSelector (%@) in %@", NSStringFromSelector(aSelector), self);
+  }
   return [responder targetForAction:aSelector withSender:responder];
 }
 
 - (const CKComponentForwardedSelectors &)selectors
 {
   return _selectors;
+}
+
+- (NSString *)description
+{
+  NSMutableString *result = [NSMutableString stringWithFormat:@"<%@ %p>\n", self.class, self];
+  for(SEL s : _selectors) {
+    [result appendFormat:@" - %@\n", NSStringFromSelector(s)];
+  }
+  return result;
 }
 
 @end
