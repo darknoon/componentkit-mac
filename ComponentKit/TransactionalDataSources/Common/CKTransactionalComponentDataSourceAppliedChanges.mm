@@ -9,13 +9,24 @@
  */
 
 #import "CKTransactionalComponentDataSourceAppliedChanges.h"
-#import "CKTransactionalComponentDataSourceAppliedChangesInternal.h"
+#import "CKTransactionalComponentDataSourceAppliedChanges.h"
 
 #import "ComponentUtilities.h"
 #import "CKEqualityHashHelpers.h"
 #import "CKMacros.h"
 
 @implementation CKTransactionalComponentDataSourceAppliedChanges
+
+- (instancetype)init
+{
+  return [self initWithUpdatedIndexPaths:nil
+                       removedIndexPaths:nil
+                         removedSections:nil
+                         movedIndexPaths:nil
+                        insertedSections:nil
+                      insertedIndexPaths:nil
+                                userInfo:nil];
+}
 
 - (instancetype)initWithUpdatedIndexPaths:(NSSet *)updatedIndexPaths
                         removedIndexPaths:(NSSet *)removedIndexPaths

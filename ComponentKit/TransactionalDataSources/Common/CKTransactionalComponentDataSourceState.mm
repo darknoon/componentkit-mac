@@ -8,10 +8,14 @@
  *
  */
 
-#import "CKTransactionalComponentDataSourceState.h"
+#import <ComponentKit/CKPlatform.h>
+
 #import "CKTransactionalComponentDataSourceStateInternal.h"
 
-#import <ComponentKit/CKPlatform.h>
+#import "CKEqualityHashHelpers.h"
+#import "CKMacros.h"
+#import "CKTransactionalComponentDataSourceConfiguration.h"
+#import "CKTransactionalComponentDataSourceItem.h"
 
 @implementation CKTransactionalComponentDataSourceState
 
@@ -32,7 +36,8 @@
 
 - (NSInteger)numberOfObjectsInSection:(NSInteger)section
 {
-  return [[_sections objectAtIndex:section] count];
+  // This is done to mimic UICollectionView behavior, which returns 0 objects even if there are 0 sections
+  return ([self numberOfSections] == 0 ? 0 : [[_sections objectAtIndex:section] count]);
 }
 
 - (CKTransactionalComponentDataSourceItem *)objectAtIndexPath:(NSIndexPath *)indexPath
@@ -59,6 +64,45 @@
       block(obj, [NSIndexPath indexPathForItem:idx inSection:section], stop);
     }];
   }
+}
+
+#pragma mark - NSObject methods
+
+- (NSString *)description
+{
+  return [_sections description];
+}
+
+- (BOOL)isEqual:(id)object
+{
+  if (![object isKindOfClass:[CKTransactionalComponentDataSourceState class]]) {
+    return NO;
+  } else {
+    CKTransactionalComponentDataSourceState *obj = ((CKTransactionalComponentDataSourceState *)object);
+    return [_configuration isEqual:obj.configuration] && [flattenedModelsFromSections(_sections) isEqualToArray:flattenedModelsFromSections(obj.sections)];
+  }
+}
+
+- (NSUInteger)hash
+{
+  NSUInteger hashes[2] = {
+    [_configuration hash],
+    [_sections hash]
+  };
+  return CKIntegerArrayHash(hashes, CK_ARRAY_COUNT(hashes));
+}
+
+static NSArray *flattenedModelsFromSections(NSArray *sections)
+{
+  NSMutableArray *modelSections = [NSMutableArray new];
+  for (NSArray *section in sections) {
+    NSMutableArray *modelSection = [NSMutableArray new];
+    for (CKTransactionalComponentDataSourceItem *item in section) {
+      [modelSection addObject:item.model];
+    }
+    [modelSections addObject:modelSection];
+  }
+  return modelSections;
 }
 
 @end

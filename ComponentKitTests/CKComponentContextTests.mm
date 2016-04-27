@@ -10,7 +10,7 @@
 
 #import <XCTest/XCTest.h>
 
-#import "CKComponentContext.h"
+#import <ComponentKit/CKComponentContext.h>
 
 @interface CKComponentContextTests : XCTestCase
 @end
@@ -29,20 +29,6 @@
 - (void)testFetchingAnObjectThatHasNotBeenEstablishedWithGetReturnsNil
 {
   XCTAssertNil(CKComponentContext<NSObject>::get(), @"Expected to return nil without throwing");
-}
-
-static void openContextWithNSObject()
-{
-  NSObject *o = [[NSObject alloc] init];
-  CKComponentContext<NSObject> context(o);
-}
-
-- (void)testAttemptingToEstablishComponentContextWithDuplicateClassThrows
-{
-  NSObject *o = [[NSObject alloc] init];
-  CKComponentContext<NSObject> context(o);
-
-  XCTAssertThrows(openContextWithNSObject(), @"Expected opening another context with NSObject to throw");
 }
 
 - (void)testComponentContextCleansUpWhenItGoesOutOfScope

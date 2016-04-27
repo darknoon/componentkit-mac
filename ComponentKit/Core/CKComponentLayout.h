@@ -14,8 +14,10 @@
 #import <ComponentKit/CKPlatform.h>
 
 #import <ComponentKit/CKAssert.h>
+#import <ComponentKit/CKSizeRange.h>
 
 @class CKComponent;
+@class CKComponentScopeRoot;
 
 struct CKComponentLayoutChild;
 
@@ -59,6 +61,16 @@ NSSet *CKMountComponentLayout(const CKComponentLayout &layout,
                               UIView *view,
                               NSSet *previouslyMountedComponents,
                               CKComponent *supercomponent);
+
+/**
+ This exists as a safe alternative to layoutThatFits:parentSize: by guarding against nil components
+ @param component The component being laid out
+ @param sizeRange The size range for laying out the component
+ @param parentSize The size of the parent of the component being laid out
+ */
+CKComponentLayout CKComponentComputeLayout(CKComponent *component,
+                                           const CKSizeRange &sizeRange,
+                                           CGSize parentSize);
 
 /** Unmounts all components returned by a previous call to CKMountComponentLayout. */
 void CKUnmountComponents(NSSet *componentsToUnmount);

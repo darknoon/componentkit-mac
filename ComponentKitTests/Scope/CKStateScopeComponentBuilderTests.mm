@@ -12,15 +12,15 @@
 
 #import <OCMock/OCMock.h>
 
-#import "CKComponentController.h"
-#import "CKComponentSubclass.h"
-#import "CKCompositeComponent.h"
+#import <ComponentKit/CKComponentController.h>
+#import <ComponentKit/CKComponentSubclass.h>
+#import <ComponentKit/CKCompositeComponent.h>
+#import <ComponentKit/CKComponentScope.h>
+#import <ComponentKit/CKComponentInternal.h>
+#import <ComponentKit/CKComponentScopeFrame.h>
+#import <ComponentKit/CKComponentScopeRoot.h>
+#import <ComponentKit/CKThreadLocalComponentScope.h>
 
-#import "CKComponentScope.h"
-#import "CKComponentInternal.h"
-#import "CKComponentScopeFrame.h"
-#import "CKComponentScopeRoot.h"
-#import "CKThreadLocalComponentScope.h"
 #import "CKStateExposingComponent.h"
 
 #pragma mark - Test Components and Controllers
@@ -147,46 +147,6 @@
   CKComponent *outerComponent = CKBuildComponent([CKComponentScopeRoot rootWithListener:nil], {}, block).component;
   XCTAssertNotNil(innerComponent.scopeFrameToken);
   XCTAssertNil(outerComponent.scopeFrameToken);
-}
-
-#pragma mark - Controller Construction
-
-- (void)testComponentWithControllerThrowsIfNoScopeExistsForTheComponent
-{
-  CKComponent *(^block)(void) = ^CKComponent *{
-    return [CKMonkeyComponent new];
-  };
-
-  XCTAssertThrows((void)CKBuildComponent([CKComponentScopeRoot rootWithListener:nil], {}, block));
-}
-
-- (void)testComponentWithControllerDoesNotThrowIfScopeExistsForTheComponent
-{
-  CKComponent *(^block)(void) = ^CKComponent *{
-    CKComponentScope scope([CKMonkeyComponent class]);
-    return [CKMonkeyComponent new];
-  };
-
-  XCTAssertNoThrow((void)CKBuildComponent([CKComponentScopeRoot rootWithListener:nil], {}, block));
-}
-
-- (void)testComponentWithControllerThatHasAnimationsThrowsIfNoScopeExistsForTheComponent
-{
-  CKComponent *(^block)(void) = ^CKComponent *{
-    return [CKMonkeyComponentWithAnimations new];
-  };
-
-  XCTAssertThrows((void)CKBuildComponent([CKComponentScopeRoot rootWithListener:nil], {}, block));
-}
-
-- (void)testComponentWithControllerThatHasAnimationsDoesNotThrowIfScopeExistsForTheComponent
-{
-  CKComponent *(^block)(void) = ^CKComponent *{
-    CKComponentScope scope([CKMonkeyComponentWithAnimations class]);
-    return [CKMonkeyComponentWithAnimations new];
-  };
-
-  XCTAssertNoThrow((void)CKBuildComponent([CKComponentScopeRoot rootWithListener:nil], {}, block));
 }
 
 @end

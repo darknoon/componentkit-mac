@@ -12,11 +12,11 @@
 
 #import <ComponentKit/CKCompositeComponent.h>
 
-#import "CKComponentScope.h"
-#import "CKComponentScopeFrame.h"
-#import "CKComponentScopeHandle.h"
-#import "CKComponentScopeRoot.h"
-#import "CKThreadLocalComponentScope.h"
+#import <ComponentKit/CKComponentScope.h>
+#import <ComponentKit/CKComponentScopeFrame.h>
+#import <ComponentKit/CKComponentScopeHandle.h>
+#import <ComponentKit/CKComponentScopeRoot.h>
+#import <ComponentKit/CKThreadLocalComponentScope.h>
 
 @interface CKComponentScopeTests : XCTestCase
 @end
@@ -52,14 +52,6 @@
 
   CKComponentScopeFrame *currentFrame = CKThreadLocalComponentScope::currentScope()->stack.top().frame;
   XCTAssertTrue(currentFrame != rootFrame);
-}
-
-- (void)testCreatingThreadLocalStateScopeThrowsIfScopeAlreadyExists
-{
-  CKComponentScopeRoot *root = [CKComponentScopeRoot rootWithListener:nil];
-
-  CKThreadLocalComponentScope threadScope(root, {});
-  XCTAssertThrows(CKThreadLocalComponentScope(root, {}));
 }
 
 #pragma mark - Scope Frame
@@ -210,60 +202,5 @@
     }
   }
 }
-
-- (void)testCreatingSiblingScopeWithSameClassNameThrows
-{
-  CKComponentScopeRoot *root = [CKComponentScopeRoot rootWithListener:nil];
-  CKThreadLocalComponentScope threadScope(root, {});
-  {
-    CKComponentScope scope([CKCompositeComponent class]);
-  }
-  {
-    XCTAssertThrows(CKComponentScope([CKCompositeComponent class]));
-  }
-}
-
-- (void)testCreatingSiblingScopeWithSameClassNameAndSameIdentifierThrows
-{
-  CKComponentScopeRoot *root = [CKComponentScopeRoot rootWithListener:nil];
-  CKThreadLocalComponentScope threadScope(root, {});
-  {
-    CKComponentScope scope([CKCompositeComponent class], @"lasagna");
-  }
-  {
-    XCTAssertThrows(CKComponentScope([CKCompositeComponent class], @"lasagna"));
-  }
-}
-
-- (void)testCreatingSiblingScopeWithSameClassButDifferentIdenfitiferDoesNotThrow
-{
-  CKComponentScopeRoot *root = [CKComponentScopeRoot rootWithListener:nil];
-  CKThreadLocalComponentScope threadScope(root, {});
-  {
-    CKComponentScope scope([CKCompositeComponent class], @"linguine");
-  }
-  {
-    XCTAssertNoThrow(CKComponentScope([CKCompositeComponent class], @"spaghetti"));
-  }
-}
-//
-//- (void)testTeardownThrowsIfStateScopeHasNotBeenPoppedBackToTheRoot
-//{
-//  CKComponentScopeRoot *root = [CKComponentScopeRoot rootWithListener:nil];
-//
-//  BOOL exceptionThrown = NO;
-//  @try {
-//    CKThreadLocalComponentScope threadScope(root, {});
-//
-//    CKComponentScopeRootFrame *frame2 = [CKComponentScopeRoot rootWithListener:nil];
-//    CKThreadLocalComponentScope::cursor()->pushFrameAndEquivalentPreviousFrame(frame2, nil);
-//  } @catch(...) {
-//    exceptionThrown = YES;
-//  }
-//
-//  XCTAssertTrue(exceptionThrown);
-//  CKThreadLocalComponentScope::cursor()->popFrame();
-//  XCTAssertTrue(CKThreadLocalComponentScope::cursor()->empty());
-//}
 
 @end

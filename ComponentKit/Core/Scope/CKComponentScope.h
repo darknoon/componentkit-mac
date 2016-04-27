@@ -10,7 +10,12 @@
 
 #import <Foundation/Foundation.h>
 
+#import <ComponentKit/CKUpdateMode.h>
+
 class CKThreadLocalComponentScope;
+@class CKComponentScopeHandle;
+
+typedef void (^CKComponentStateUpdater)(id (^)(id), CKUpdateMode mode);
 
 /**
  Components have local "state" that is independent of the values passed into its +new method. Components can update
@@ -49,11 +54,20 @@ public:
   ~CKComponentScope();
 
   /** @return The current state for the component being built. */
-  id state() const;
+  id state(void) const;
+
+  /**
+   @return A block that schedules a state update when invoked.
+   @discussion Usually, prefer the more idiomatic [CKComponent -updateState:mode:]. Use this in the rare case where you
+   need to pass a state updater to a child component during +new. (Usually, the child should communicate back via
+   CKComponentAction and the parent should call -updateState:mode: on itself; this hides the implementation details
+   of the parent's state from the child.)
+  */
+  CKComponentStateUpdater stateUpdater(void) const;
 
 private:
   CKComponentScope(const CKComponentScope&) = delete;
   CKComponentScope &operator=(const CKComponentScope&) = delete;
   CKThreadLocalComponentScope *_threadLocalScope;
-  id _state;
+  CKComponentScopeHandle *_scopeHandle;
 };
