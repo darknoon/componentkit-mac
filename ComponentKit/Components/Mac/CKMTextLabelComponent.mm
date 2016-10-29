@@ -46,16 +46,6 @@ static NSFont *labelFontOrDefault(NSFont *font) {
   return c;
 }
 
-+ (NSCache *)cache
-{
-  static dispatch_once_t onceToken;
-  static NSCache *cache;
-  dispatch_once(&onceToken, ^{
-    cache = [[NSCache alloc] init];
-  });
-  return cache;
-}
-
 - (CKComponentLayout)computeLayoutThatFits:(CKSizeRange)constrainedSize
 {
   const CGSize constraint = {
@@ -67,6 +57,7 @@ static NSFont *labelFontOrDefault(NSFont *font) {
 
   NSMutableParagraphStyle *ps = [[NSMutableParagraphStyle alloc] init];
   ps.lineBreakMode = _attrs.lineBreakMode;
+  ps.alignment = _attrs.alignment;
   
   NSDictionary *attributes = @{
                                NSFontAttributeName: font,
@@ -80,7 +71,17 @@ static NSFont *labelFontOrDefault(NSFont *font) {
 
   rect.size.width = ceil(rect.size.width);
 
-  return {self, constrainedSize.clamp(rect.size), {}, nil, {.left = -2, .right = -2}};
+  // It turns out that centered text wants more space than left/right aligned text. Goodness knows why, but you can confirm in IB.
+  NSEdgeInsets insetsNormal = {.left = -2, .right = -2};
+  NSEdgeInsets insetsCenter = {.left = -4, .right = -4};
+
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 101100
+  const NSEdgeInsets ei = _attrs.alignment == NSTextAlignmentCenter ? insetsCenter : insetsNormal;
+#else
+  const NSEdgeInsets ei = _attrs.alignment == NSCenterTextAlignment ? insetsCenter : insetsNormal;
+#endif
+
+  return {self, constrainedSize.clamp(rect.size), {}, nil, ei};
 }
 
 @end
