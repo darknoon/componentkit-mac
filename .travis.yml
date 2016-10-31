@@ -1,13 +1,19 @@
+os: osx
+osx_image: xcode8
 language: objective-c
-osx_image: xcode7.3
 
-before_install:
-  - brew update
-  - brew outdated xctool || brew upgrade xctool
+install:
+  - gem install xcpretty -N --no-ri --no-rdoc
 
-script: ./build.sh ci
+script:
+  - ./build.sh $BUILD_SUBCOMMAND
 
-# Whitelist for branches
+env:
+  matrix:
+    - BUILD_SUBCOMMAND="ci-componentkit-ios"
+    - BUILD_SUBCOMMAND="ci-componentkit-tvos"
+    - BUILD_SUBCOMMAND="ci-wildeguess-ios"
+
 branches:
   only:
     - master

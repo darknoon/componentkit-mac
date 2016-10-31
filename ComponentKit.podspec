@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
-  s.name = "ComponentKit"
-  s.version = "0.14"
+  s.name = 'ComponentKit'
+  s.version = '0.15.1'
   s.summary = "A React-inspired view framework for iOS and OS X"
   s.homepage = "https://componentkit.org"
   s.authors = 'adamjernst@fb.com', 'andrewpouliot@fb.com', 'beefon@fb.com',
@@ -12,6 +12,8 @@ Pod::Spec.new do |s|
   s.social_media_url = 'https://twitter.com/componentkit'
   s.ios.platform = :ios, '7.0'
   s.osx.platform = :osx, '10.10'
+  s.ios.deployment_target = '8.1'
+  s.tvos.deployment_target = '9.1'
   s.osx.deployment_target = '10.10'
   s.requires_arc = true
 

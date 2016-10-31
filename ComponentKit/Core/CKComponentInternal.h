@@ -63,7 +63,10 @@
 @property (nonatomic, weak) UIView *rootComponentMountedView;
 
 /** For internal use only; don't touch this. */
-@property (nonatomic, strong, readonly) id scopeFrameToken;
+@property (nonatomic, strong, readonly) id<NSObject> scopeFrameToken;
+
+/** The size that was passed into the component; don't touch this. */
+@property (nonatomic, assign, readonly) CKComponentSize size;
 
 /** For internal use only; don't touch this. */
 @property (nonatomic, readonly) CKComponentScopeHandleIdentifier globalIdentifier;

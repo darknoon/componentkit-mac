@@ -37,6 +37,8 @@ typedef NS_ENUM(NSUInteger, CKComponentControllerState) {
 typedef size_t CKComponentAnimationID;
 typedef std::unordered_map<CKComponentAnimationID, CKAppliedComponentAnimation> CKAppliedComponentAnimationMap;
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-function"
 static NSString *componentStateName(CKComponentControllerState state)
 {
   switch (state) {
@@ -52,6 +54,7 @@ static NSString *componentStateName(CKComponentControllerState state)
       return @"unmounting";
   };
 }
+#pragma clang diagnostic pop
 
 static void eraseAnimation(CKAppliedComponentAnimationMap &map, CKComponentAnimationID animationID)
 {
@@ -74,6 +77,14 @@ static void eraseAnimation(CKAppliedComponentAnimationMap &map, CKComponentAnima
   CKAppliedComponentAnimationMap _appliedAnimationsOnInitialMount;
   std::vector<CKPendingComponentAnimation> _pendingAnimations;
   CKAppliedComponentAnimationMap _appliedAnimations;
+}
+
+- (instancetype)initWithComponent:(CKComponent *)component
+{
+  if (self = [super init]) {
+    _component = component;
+  }
+  return self;
 }
 
 - (void)willMount {}

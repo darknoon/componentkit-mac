@@ -20,9 +20,6 @@
 static CKViewComponentAttributeValueMap ViewAttributesFromAccessibilityContext(const CKComponentAccessibilityContext &accessibilityContext)
 {
   CKViewComponentAttributeValueMap accessibilityAttributes;
-  if (accessibilityContext.accessibilityIdentifier) {
-    accessibilityAttributes[@selector(setAccessibilityIdentifier:)] = accessibilityContext.accessibilityIdentifier;
-  }
   if (accessibilityContext.isAccessibilityElement) {
 #if TARGET_OS_IPHONE
     accessibilityAttributes[@selector(setIsAccessibilityElement:)] = accessibilityContext.isAccessibilityElement;

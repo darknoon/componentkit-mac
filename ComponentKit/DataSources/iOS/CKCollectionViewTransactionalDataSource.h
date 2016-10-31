@@ -10,8 +10,8 @@
 
 #import <UIKit/UIKit.h>
 
-#import "CKTransactionalComponentDataSource.h"
-#import "CKSupplementaryViewDataSource.h"
+#import <ComponentKit/CKTransactionalComponentDataSource.h>
+#import <ComponentKit/CKSupplementaryViewDataSource.h>
 
 /**
  This class is an implementation of a `UICollectionViewDataSource` that can be used along with components. For each set of changes (i.e insertion/deletion/update
@@ -66,6 +66,18 @@
 - (void)updateConfiguration:(CKTransactionalComponentDataSourceConfiguration *)configuration
                        mode:(CKUpdateMode)mode
                    userInfo:(NSDictionary *)userInfo;
+
+/**
+ Sends -componentTreeWillAppear to all CKComponentControllers for the given cell.
+ If needed, call this from -collectionView:willDisplayCell:forItemAtIndexPath:
+ */
+- (void)announceWillDisplayCell:(UICollectionViewCell *)cell;
+
+/**
+ Sends -componentTreeDidDisappear to all CKComponentControllers for the given cell.
+ If needed, call this from -collectionView:didEndDisplayingCell:forItemAtIndexPath:
+ */
+- (void)announceDidEndDisplayingCell:(UICollectionViewCell *)cell;
 
 @property (readonly, nonatomic, strong) UICollectionView *collectionView;
 /**

@@ -17,7 +17,7 @@
 #import <ComponentKit/CKComponentProvider.h>
 #import <ComponentKit/ComponentUtilities.h>
 
-#import "CKTestRunLoopRunning.h"
+#import <ComponentKitTestLib/CKTestRunLoopRunning.h>
 #import "CKComponentDataSourceTestDelegate.h"
 #import "CKComponentLifecycleManagerAsynchronousUpdateHandler.h"
 
@@ -100,10 +100,9 @@ namespace CK {
 - (void)setUp
 {
   [super setUp];
-  CKComponentConstantDecider *decider = [[CKComponentConstantDecider alloc] initWithEnabled:NO];
   CKComponentDataSource *dataSource = [[CKComponentDataSource alloc] initWithComponentProvider:nil
                                                                                        context:nil
-                                                                                       decider:decider];
+                                                                                       decider:[CKComponentConstantDenyingDecider class]];
   _dataSource = dataSource;
 }
 
@@ -115,10 +114,9 @@ namespace CK {
 
 - (void)testInitialState
 {
-  CKComponentConstantDecider *decider = [[CKComponentConstantDecider alloc] initWithEnabled:NO];
   CKComponentDataSource *dataSource = [[CKComponentDataSource alloc] initWithComponentProvider:nil
                                                                                        context:nil
-                                                                                       decider:decider];
+                                                                                       decider:[CKComponentConstantDenyingDecider class]];
   XCTAssertNotNil(dataSource);
   XCTAssertEqual([dataSource numberOfSections], 0);
   XCTAssertThrowsSpecificNamed([dataSource objectAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]],
@@ -148,10 +146,9 @@ static const CKSizeRange constrainedSize = {{320, 0}, {320, INFINITY}};
 
   CKComponentDataSourceTestDelegate *delegate = [[CKComponentDataSourceTestDelegate alloc] init];
 
-  CKComponentConstantDecider *decider = [[CKComponentConstantDecider alloc] initWithEnabled:NO];
   CKComponentDataSource *dataSource = [[CKComponentDataSource alloc] initWithComponentProvider:nil
                                                                                        context:nil
-                                                                                       decider:decider];
+                                                                                       decider:[CKComponentConstantDenyingDecider class]];
 
   dataSource.delegate = delegate;
 
@@ -300,7 +297,7 @@ static const CKSizeRange constrainedSize = {{320, 0}, {320, INFINITY}};
   Input::Changeset changeset = {sections, {}};
   XCTAssertThrowsSpecificNamed([_dataSource enqueueChangeset:changeset constrainedSize:constrainedSize],
                                NSException,
-                               NSRangeException);
+                               NSInternalInconsistencyException);
 }
 
 - (void)testRemovalOfSingleEmptySectionLeavesDataSourceEmpty
@@ -402,10 +399,9 @@ static const CKSizeRange constrainedSize = {{320, 0}, {320, INFINITY}};
 
   CKComponentDataSourceTestDelegate *delegate = [[CKComponentDataSourceTestDelegate alloc] init];
 
-  CKComponentConstantDecider *decider = [[CKComponentConstantDecider alloc] initWithEnabled:NO];
   CKComponentDataSource *dataSource = [[CKComponentDataSource alloc] initWithComponentProvider:nil
                                                                                        context:nil
-                                                                                       decider:decider];
+                                                                                       decider:[CKComponentConstantDenyingDecider class]];
 
   dataSource.delegate = delegate;
 
@@ -468,7 +464,7 @@ static const CKSizeRange constrainedSize = {{320, 0}, {320, INFINITY}};
   Input::Changeset changeset = {{}, items};
   XCTAssertThrowsSpecificNamed([_dataSource enqueueChangeset:changeset constrainedSize:constrainedSize],
                                NSException,
-                               NSRangeException);
+                               NSInternalInconsistencyException);
 }
 
 - (void)testRemovalOfLastItemLeavesSectionEmpty
@@ -849,10 +845,9 @@ static const CKSizeRange constrainedSize = {{320, 0}, {320, INFINITY}};
 
   CKComponentDataSourceTestDelegate *delegate = [[CKComponentDataSourceTestDelegate alloc] init];
 
-  CKComponentConstantDecider *decider = [[CKComponentConstantDecider alloc] initWithEnabled:NO];
   CKComponentDataSource *dataSource = [[CKComponentDataSource alloc] initWithComponentProvider:nil
                                                                                        context:nil
-                                                                                       decider:decider];
+                                                                                       decider:[CKComponentConstantDenyingDecider class]];
 
   dataSource.delegate = delegate;
 
@@ -1014,10 +1009,9 @@ static const CKSizeRange constrainedSize = {{320, 0}, {320, INFINITY}};
 
   CKComponentDataSourceTestDelegate *delegate = [[CKComponentDataSourceTestDelegate alloc] init];
 
-  CKComponentConstantDecider *decider = [[CKComponentConstantDecider alloc] initWithEnabled:NO];
   CKComponentDataSource *dataSource = [[CKComponentDataSource alloc] initWithComponentProvider:nil
                                                                                        context:nil
-                                                                                       decider:decider];
+                                                                                       decider:[CKComponentConstantDenyingDecider class]];
 
   dataSource.delegate = delegate;
 
@@ -1099,10 +1093,9 @@ static const CKSizeRange constrainedSize = {{320, 0}, {320, INFINITY}};
   
   CKComponentDataSourceTestDelegate *delegate = [[CKComponentDataSourceTestDelegate alloc] init];
   
-  CKComponentConstantDecider *decider = [[CKComponentConstantDecider alloc] initWithEnabled:YES];
   CKComponentDataSource *dataSource = [[CKComponentDataSource alloc] initWithComponentProvider:[self class]
                                                                                        context:@"context"
-                                                                                       decider:decider];
+                                                                                       decider:[CKComponentConstantApprovingDecider class]];
   
   dataSource.delegate = delegate;
   

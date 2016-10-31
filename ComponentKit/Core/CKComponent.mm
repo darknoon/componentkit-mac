@@ -45,7 +45,6 @@ struct CKComponentMountInfo {
 {
   CKComponentScopeHandle *_scopeHandle;
   CKComponentViewConfiguration _viewConfiguration;
-  CKComponentSize _size;
 
   /** Only non-null while mounted. */
   std::unique_ptr<CKComponentMountInfo> _mountInfo;
@@ -101,6 +100,7 @@ struct CKComponentMountInfo {
 
 - (CKComponentViewContext)viewContext
 {
+  CKAssertMainThread();
   return _mountInfo ? _mountInfo->viewContext : CKComponentViewContext();
 }
 
@@ -110,6 +110,7 @@ struct CKComponentMountInfo {
                                       layout:(const CKComponentLayout &)layout
                               supercomponent:(CKComponent *)supercomponent
 {
+  CKAssertMainThread();
   // Taking a const ref to a temporary extends the lifetime of the temporary to the lifetime of the const ref
   const CKComponentViewConfiguration &viewConfiguration = CK::Component::Accessibility::IsAccessibilityEnabled() ? CK::Component::Accessibility::AccessibleViewConfiguration(_viewConfiguration) : _viewConfiguration;
 
@@ -163,6 +164,7 @@ struct CKComponentMountInfo {
 
 - (void)unmount
 {
+  CKAssertMainThread();
   if (_mountInfo != nullptr) {
     [_scopeHandle.controller componentWillUnmount:self];
     [self _relinquishMountedView];
@@ -173,12 +175,16 @@ struct CKComponentMountInfo {
 
 - (void)_relinquishMountedView
 {
-  UIView *view = _mountInfo->view;
-  if (view) {
-    CKAssert(view.ck_component == self, @"");
-    [_scopeHandle.controller component:self willRelinquishView:view];
-    view.ck_component = nil;
-    _mountInfo->view = nil;
+  CKAssertMainThread();
+  CKAssert(_mountInfo != nullptr, @"_mountInfo should not be null");
+  if (_mountInfo != nullptr) {
+    UIView *view = _mountInfo->view;
+    if (view) {
+      CKAssert(view.ck_component == self, @"");
+      [_scopeHandle.controller component:self willRelinquishView:view];
+      view.ck_component = nil;
+      _mountInfo->view = nil;
+    }
   }
 }
 
@@ -206,6 +212,7 @@ struct CKComponentMountInfo {
 
 - (UIView *)viewForAnimation
 {
+  CKAssertMainThread();
   return _mountInfo ? _mountInfo->view : nil;
 }
 
@@ -219,7 +226,7 @@ struct CKComponentMountInfo {
 
   CKAssert(layout.component == self, @"Layout computed by %@ should return self as component, but returned %@",
            [self class], [layout.component class]);
-  CKSizeRange resolvedRange = constrainedSize.intersect(_size.resolve(parentSize));
+  CKSizeRange resolvedRange __attribute__((unused)) = constrainedSize.intersect(_size.resolve(parentSize));
   CKAssert(layout.size.width <= resolvedRange.max.width
            && layout.size.width >= resolvedRange.min.width
            && layout.size.height <= resolvedRange.max.height
@@ -257,6 +264,7 @@ struct CKComponentMountInfo {
 
 - (id)nextResponderAfterController
 {
+  CKAssertMainThread();
   return (_mountInfo ? _mountInfo->supercomponent : nil) ?: [self rootComponentMountedView];
 }
 
@@ -304,7 +312,7 @@ static void *kRootComponentMountedViewKey = &kRootComponentMountedViewKey;
   return _scopeHandle.controller;
 }
 
-- (id)scopeFrameToken
+- (id<NSObject>)scopeFrameToken
 {
   return _scopeHandle ? @(_scopeHandle.globalIdentifier) : nil;
 }

@@ -18,16 +18,26 @@
 #import "ComponentUtilities.h"
 #import "CKComponentInternal.h"
 #import "CKComponentSubclass.h"
+#import "CKDetectComponentScopeCollisions.h"
 #import "CKTransactionalComponentDataSourceItemInternal.h"
 
 using namespace CK::Component;
 
+static void _deleteComponentLayoutChild(void *target)
+{
+  delete (std::vector<CKComponentLayoutChild> *)target;
+}
+
 void CKOffMainThreadDeleter::operator()(std::vector<CKComponentLayoutChild> *target)
 {
-  if ([NSThread isMainThread]) {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-      delete target;
-    });
+  // When deallocating a large layout tree this is called first on the root node
+  // so we dispatch once and deallocate the whole tree on a background thread.
+  // However, if you have a CKComponentLayout as an ivar/variable, it will be initialized
+  // with the default contstructor and an empty vector. When you set the ivar, this method is called
+  // to deallocate the empty layout, and in this case it's not worth doing the dispatch.
+  if ([NSThread isMainThread] && target && !target->empty()) {
+    // use dispatch_async_f to avoid block allocations
+    dispatch_async_f(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), target, &_deleteComponentLayoutChild);
   } else {
     delete target;
   }
@@ -88,9 +98,16 @@ NSSet *CKMountComponentLayout(const CKComponentLayout &layout,
   return mountedComponents;
 }
 
-CKComponentLayout CKComponentComputeLayout(CKComponent *component,
+CKComponentLayout CKComputeRootComponentLayout(CKComponent *rootComponent, const CKSizeRange &sizeRange)
+{
+  const CKComponentLayout layout = CKComputeComponentLayout(rootComponent, sizeRange, sizeRange.max);
+  CKDetectComponentScopeCollisions(layout);
+  return layout;
+}
+
+CKComponentLayout CKComputeComponentLayout(CKComponent *component,
                                            const CKSizeRange &sizeRange,
-                                           CGSize parentSize)
+                                           const CGSize parentSize)
 {
   return component ? [component layoutThatFits:sizeRange parentSize:parentSize] : (CKComponentLayout){};
 }

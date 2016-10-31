@@ -49,6 +49,7 @@ struct CKComponentHostingViewInputs {
 
   BOOL _scheduledAsynchronousComponentUpdate;
   BOOL _isSynchronouslyUpdatingComponent;
+  BOOL _isMountingComponent;
 }
 @end
 
@@ -100,14 +101,22 @@ struct CKComponentHostingViewInputs {
 
 - (void)_layoutSubviews
 {
-  _containerView.frame = self.bounds;
 
-  [self _synchronouslyUpdateComponentIfNeeded];
-  const CGSize size = self.bounds.size;
-  if (_mountedLayout.component != _component || !CGSizeEqualToSize(_mountedLayout.size, size)) {
-    _mountedLayout = CKComponentComputeLayout(_component, {size, size}, size);
+  // It is possible for a view change due to mounting to trigger a re-layout of the entire screen. This can
+  // synchronously call layoutIfNeeded on this view, which could cause a re-entrant component mount, which we want
+  // to avoid.
+  if (!_isMountingComponent) {
+    _isMountingComponent = YES;
+    _containerView.frame = self.bounds;
+
+    [self _synchronouslyUpdateComponentIfNeeded];
+    const CGSize size = self.bounds.size;
+    if (_mountedLayout.component != _component || !CGSizeEqualToSize(_mountedLayout.size, size)) {
+      _mountedLayout = CKComputeRootComponentLayout(_component, {size, size});
+    }
+    _mountedComponents = [CKMountComponentLayout(_mountedLayout, _containerView, _mountedComponents, nil) copy];
+    _isMountingComponent = NO;
   }
-  _mountedComponents = [CKMountComponentLayout(_mountedLayout, _containerView, _mountedComponents, nil) copy];
 }
 
 #if TARGET_OS_IPHONE
@@ -131,7 +140,7 @@ struct CKComponentHostingViewInputs {
   CKAssertMainThread();
   [self _synchronouslyUpdateComponentIfNeeded];
   const CKSizeRange constrainedSize = [_sizeRangeProvider sizeRangeForBoundingSize:size];
-  return CKComponentComputeLayout(_component, constrainedSize, constrainedSize.max).size;
+  return CKComputeRootComponentLayout(_component, constrainedSize).size;
 }
 
 #pragma mark - Accessors
@@ -220,6 +229,7 @@ struct CKComponentHostingViewInputs {
     dispatch_async(dispatch_get_main_queue(), ^{
       if (!_componentNeedsUpdate) {
         // A synchronous update snuck in and took care of it for us.
+        _scheduledAsynchronousComponentUpdate = NO;
         return;
       }
 
